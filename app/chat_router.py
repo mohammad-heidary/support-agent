@@ -4,7 +4,7 @@ import traceback
 
 from app.models import UserMessage
 from app.database import save_message, get_history
-from app.agents import get_agent
+from app.agent import get_agent
 
 chat_router = APIRouter()
 sessions = {}
