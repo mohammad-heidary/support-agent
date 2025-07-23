@@ -1,5 +1,5 @@
 ### app/models.py
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import List, Optional, TypedDict
 
 class Message(BaseModel):
@@ -19,5 +19,7 @@ class ModelAction(BaseModel):
     action: str 
     model_name: str | None = None
 
-class DidarInput(TypedDict):
-    query: str
+# Define a request class for registration
+class SignUpRequest(BaseModel):
+    email: EmailStr # This line checks the email format
+    password: str

@@ -1,3 +1,4 @@
+#app/chat_router.py
 from fastapi import APIRouter, HTTPException
 import traceback
 
@@ -38,12 +39,13 @@ def send_message(message: UserMessage):
     agent = session["agent"]
     save_message(session_id, "user", content)
 
-    response = agent.invoke({"messages": [{"role": "user", "content": content}]})
+    response = agent.invoke({"messages": history}) # Main change: Sending the entire history
 
   #  print (f"⚠️ Raw response: {response}")
     try:
         ai_message = response["messages"][-1]
         output = ai_message.content
+        save_message(session_id, "bot", output) # Added: AI message storage
     except Exception as e:
             traceback.print_exc()
             output = f"❗ Error processing response: {str(e)}"

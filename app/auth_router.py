@@ -8,12 +8,13 @@ from app.auth_utils import create_access_token, decode_token
 from app.agents import get_agent
 from app.chat_router import sessions, DEFAULT_MODEL, WELCOME_MESSAGE
 from app.database import save_message
+from app.models import SignUpRequest
 
 auth_router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 @auth_router.post("/signup")
-def signup(form_data: OAuth2PasswordRequestForm = Depends()):
+def signup(signup_data: SignUpRequest):
     success = create_user(form_data.username, form_data.password)
     if not success:
         raise HTTPException(status_code=400, detail="User already exists")
@@ -37,7 +38,6 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
         "session_id": session_id,
         "welcome": WELCOME_MESSAGE
     }
-
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
     user = decode_token(token)

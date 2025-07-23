@@ -1,7 +1,7 @@
 ### requirements.txt
 fastapi
+email-validator
 uvicorn[standard]
-sqlite-utils
 langchain
 langchain_community
 langchain-tavily
