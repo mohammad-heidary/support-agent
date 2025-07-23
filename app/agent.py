@@ -177,7 +177,6 @@ def get_agent(model_name: str):
         presence_penalty=0.1,
         model_kwargs={"response_format": {"type": "json_object"}} # for JSON response
     )
-    )
     llm = llm.with_config(system_message="""
 You are a smart and friendly assistant named SupportBot.
 You help users find information specifically about services and policies on alibaba.ir.
