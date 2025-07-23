@@ -1,6 +1,5 @@
 ### requirements.txt
 fastapi
-email-validator
 uvicorn[standard]
 langchain
 langchain_community
@@ -11,3 +10,5 @@ python-jose
 passlib[bcrypt]
 python-multipart
 streamlit
+python-dotenv
+pymongo

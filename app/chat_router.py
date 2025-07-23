@@ -9,7 +9,8 @@ from app.agent import get_agent
 chat_router = APIRouter()
 sessions = {}
 
-DEFAULT_MODEL = "mistralai/mistral-7b-instruct"
+#DEFAULT_MODEL = "mistralai/mistral-7b-instruct"
+DEFAULT_MODEL = "qwen/qwen2.5-72b-instruct"
 
 WELCOME_MESSAGE = "hi! how can i help you? 😊"
 
@@ -45,7 +46,7 @@ def send_message(message: UserMessage):
     try:
         ai_message = response["messages"][-1]
         output = ai_message.content
-        save_message(session_id, "bot", output) # Added: AI message storage
+        save_message(session_id, "assistant", output) # Added: AI message storage
     except Exception as e:
             traceback.print_exc()
             output = f"❗ Error processing response: {str(e)}"

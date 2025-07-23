@@ -1,9 +1,9 @@
 ### app/models.py
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, validator 
 from typing import List, Optional, TypedDict
 
 class Message(BaseModel):
-    role: str  # 'user' or 'bot'
+    role: str  # 'user', 'assistant', 'system', etc.
     content: str
 
 class ChatSession(BaseModel):
@@ -23,3 +23,15 @@ class ModelAction(BaseModel):
 class SignUpRequest(BaseModel):
     email: EmailStr # This line checks the email format
     password: str
+   
+    @validator('email')
+    def validate_email_domain(cls, v):
+         """
+         Validates that the email domain is example.com.
+         Modify the domain list as needed.
+         """
+         allowed_domains = ["gmail.com", "email.com"]
+         domain = v.split('@')[-1].lower()
+         if domain not in allowed_domains:
+             raise ValueError(f'فقط ایمیل‌های با دامنه‌های {", ".join(allowed_domains)} مجاز هستند.')
+         return v

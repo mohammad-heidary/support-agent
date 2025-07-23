@@ -5,7 +5,7 @@ import uuid
 
 from app.users_db import create_user, verify_user
 from app.auth_utils import create_access_token, decode_token
-from app.agents import get_agent
+from app.agent import get_agent
 from app.chat_router import sessions, DEFAULT_MODEL, WELCOME_MESSAGE
 from app.database import save_message
 from app.models import SignUpRequest
@@ -15,7 +15,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 @auth_router.post("/signup")
 def signup(signup_data: SignUpRequest):
-    success = create_user(form_data.username, form_data.password)
+    success = create_user(signup_data.email, signup_data.password)
     if not success:
         raise HTTPException(status_code=400, detail="User already exists")
     return {"msg": "User created"}
@@ -30,7 +30,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     # Create a default session for this user
     session_id = str(uuid.uuid4())
     sessions[session_id] = {"agent": get_agent(DEFAULT_MODEL)}
-    save_message(session_id, "bot", WELCOME_MESSAGE)
+    save_message(session_id, "assistant", WELCOME_MESSAGE)
 
     return {
         "access_token": token,

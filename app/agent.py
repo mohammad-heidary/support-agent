@@ -8,17 +8,17 @@ import os
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+load_dotenv("./app/.env")
 
 # Access the variables
 openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
 openrouter_base_url = os.getenv("OPENROUTER_API_BASE")
-tavily_key = os.getenv("TAVILY_API_KEY")
+tavily_api_key = os.getenv("TAVILY_API_KEY")
 
 # --- Alibaba.ir Tools ---
 
 # Initialize the Tavily tool for web searches
-tavily_tool = TavilySearchResults(max_results=3)
+tavily_tool = TavilySearchResults(max_results=3, tavily_api_key= tavily_api_key)
 
 # --- General Search Tools for Alibaba.ir Sections ---
 # These tools use Tavily to search within specific subdomains or sections of alibaba.ir
@@ -169,7 +169,14 @@ def get_agent(model_name: str):
     llm = ChatOpenAI(
         model_name=model_name,
         openai_api_key=openrouter_api_key,
-        openai_api_base=openrouter_base_url
+        openai_api_base=openrouter_base_url,
+        temperature=0.7,  # For example, for more natural responses
+        max_tokens=2048,  # For example, for longer answers
+        top_p=0.9,
+        frequency_penalty=0.1,
+        presence_penalty=0.1,
+        model_kwargs={"response_format": {"type": "json_object"}} # for JSON response
+    )
     )
     llm = llm.with_config(system_message="""
 You are a smart and friendly assistant named SupportBot.
