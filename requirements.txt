@@ -1,0 +1,13 @@
+### requirements.txt
+fastapi
+uvicorn[standard]
+sqlite-utils
+langchain
+langchain_community
+langchain-tavily
+langgraph
+langchain-openai
+python-jose 
+passlib[bcrypt]
+python-multipart
+streamlit

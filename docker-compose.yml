@@ -1,0 +1,21 @@
+#docker-compose.yml
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app
+    env_file:
+      - .env
+
+  ui:
+    image: python:3.11-slim
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: streamlit run ui.py --server.port=8501 --server.address=0.0.0.0
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
