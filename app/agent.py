@@ -41,7 +41,7 @@ def search_alibaba_magazine(query: str) -> str:
 # --- Specific Section Search Tools ---
 # These provide more targeted search capabilities for major service categories
 def search_alibaba_profile(query: str) -> str:
-    ""Search for information about profile(پروفایل)"""
+    """Search for information about profile(پروفایل)"""
     search_query = f"site:alibaba.ir/profile {query}"
     return tavily_tool.invoke({"query": search_query})
 
