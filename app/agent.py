@@ -2,7 +2,7 @@
 
 from langgraph.prebuilt import create_react_agent
 from langchain_openai import ChatOpenAI
-from langchain_community.tools import TavilySearchResults
+from langchain_tavily import TavilySearch
 from langchain_core.tools import Tool
 import os
 from dotenv import load_dotenv
@@ -18,7 +18,7 @@ tavily_api_key = os.getenv("TAVILY_API_KEY")
 # --- Alibaba.ir Tools ---
 
 # Initialize the Tavily tool for web searches
-tavily_tool = TavilySearchResults(max_results=3, tavily_api_key= tavily_api_key)
+tavily_tool = TavilySearch(max_results=3, tavily_api_key= tavily_api_key, topic="general")
 
 # --- General Search Tools for Alibaba.ir Sections ---
 # These tools use Tavily to search within specific subdomains or sections of alibaba.ir

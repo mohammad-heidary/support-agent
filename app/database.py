@@ -13,12 +13,30 @@ MONGO_COLLECTION_NAME = os.getenv("MONGO_COLLECTION_NAME")
 
 # Initialize MongoDB client and database
 try:
-    client = MongoClient(MONGO_URI)
-    db = client[MONGO_DB_NAME] 
+    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+    # Test the connection
+    client.admin.command('ping') 
+    print("✅ Connected to MongoDB successfully!")
+    
+    db = client[MONGO_DB_NAME]
     chat_sessions_collection = db[MONGO_COLLECTION_NAME]
+    
+    db_list = client.list_database_names()
+    if MONGO_DB_NAME in db_list:
+         print(f"✅ Database '{MONGO_DB_NAME}' exists.")
+    else:
+         print(f"ℹ️  Database '{MONGO_DB_NAME}' will be created on first use.")
+
+    col_list = db.list_collection_names() 
+    if MONGO_COLLECTION_NAME in col_list:
+         print(f"✅ Collection '{MONGO_COLLECTION_NAME}' exists.")
+    else:
+         print(f"ℹ️  Collection '{MONGO_COLLECTION_NAME}' will be created on first use.")
+
 except Exception as e:
     print(f"❌ Error connecting to MongoDB: {e}")
-    raise e
+    raise e 
+
 
 def save_message(session_id: str, role: str, content: str):
     """

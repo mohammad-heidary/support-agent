@@ -2,7 +2,6 @@
 fastapi
 uvicorn[standard]
 langchain
-langchain_community
 langchain-tavily
 langgraph
 langchain-openai

@@ -9,8 +9,11 @@ from app.agent import get_agent
 chat_router = APIRouter()
 sessions = {}
 
-#DEFAULT_MODEL = "mistralai/mistral-7b-instruct"
-DEFAULT_MODEL = "qwen/qwen2.5-72b-instruct"
+DEFAULT_MODEL = "mistralai/mistral-7b-instruct"
+#DEFAULT_MODEL = "qwen/qwen2.5-72b-instruct"
+#DEFAULT_MODEL = "mistralai/mistral-nemo"
+#DEFAULT_MODEL = "mistralai/mistral-small-3.1-24b-instruct"
+
 
 WELCOME_MESSAGE = "hi! how can i help you? 😊"
 
