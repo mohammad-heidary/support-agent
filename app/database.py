@@ -13,7 +13,7 @@ MONGO_COLLECTION_NAME = os.getenv("MONGO_COLLECTION_NAME")
 
 # Initialize MongoDB client and database
 try:
-    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+    client = MongoClient('localhost',27017, serverSelectionTimeoutMS=5000)
     # Test the connection
     client.admin.command('ping') 
     print("✅ Connected to MongoDB successfully!")
