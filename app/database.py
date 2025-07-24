@@ -1,10 +1,11 @@
 ### app/database.py
-from pymongo import MongoClient
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
 import os
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv()
+load_dotenv("./app/.env")
 
 # Get MongoDB configuration
 MONGO_URI = os.getenv("MONGO_URI")
@@ -13,10 +14,11 @@ MONGO_COLLECTION_NAME = os.getenv("MONGO_COLLECTION_NAME")
 
 # Initialize MongoDB client and database
 try:
-    client = MongoClient('localhost',27017, serverSelectionTimeoutMS=5000)
-    # Test the connection
+    # Create a new client and connect to the server
+    client = MongoClient(MONGO_URI, server_api=ServerApi('1'))
+    # Send a ping to confirm a successful connection
     client.admin.command('ping') 
-    print("✅ Connected to MongoDB successfully!")
+    print("✅Pinged your deployment. Connected to MongoDB successfully!")
     
     db = client[MONGO_DB_NAME]
     chat_sessions_collection = db[MONGO_COLLECTION_NAME]
@@ -36,7 +38,6 @@ try:
 except Exception as e:
     print(f"❌ Error connecting to MongoDB: {e}")
     raise e 
-
 
 def save_message(session_id: str, role: str, content: str):
     """

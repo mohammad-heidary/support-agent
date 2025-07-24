@@ -1,5 +1,5 @@
 ### app/models.py
-from pydantic import BaseModel, EmailStr, validator 
+from pydantic import BaseModel, EmailStr, validator, Field
 from typing import List, Optional, TypedDict
 
 class Message(BaseModel):
@@ -35,3 +35,7 @@ class SignUpRequest(BaseModel):
          if domain not in allowed_domains:
              raise ValueError(f'فقط ایمیل‌های با دامنه‌های {", ".join(allowed_domains)} مجاز هستند.')
          return v
+
+# Define the input model for search tools (required for strict tools)
+class SearchInput(BaseModel):
+    query: str = Field(description="The search query string")

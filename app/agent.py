@@ -3,9 +3,12 @@
 from langgraph.prebuilt import create_react_agent
 from langchain_openai import ChatOpenAI
 from langchain_tavily import TavilySearch
-from langchain_core.tools import Tool
+from langchain_core.tools import StructuredTool
+import requests 
 import os
 from dotenv import load_dotenv
+
+from app.models import SearchInput
 
 # Load environment variables from .env file
 load_dotenv("./app/.env")
@@ -18,150 +21,231 @@ tavily_api_key = os.getenv("TAVILY_API_KEY")
 # --- Alibaba.ir Tools ---
 
 # Initialize the Tavily tool for web searches
-tavily_tool = TavilySearch(max_results=3, tavily_api_key= tavily_api_key, topic="general")
+
+tavily_tool = TavilySearch(max_results=3, tavily_api_key=tavily_api_key, topic="general")
 
 # --- General Search Tools for Alibaba.ir Sections ---
 # These tools use Tavily to search within specific subdomains or sections of alibaba.ir
 
-def search_alibaba_general(query: str) -> str:
+# Change: We define functions separately (for use in StructuredTool)
+def search_alibaba_general_func(query: str) -> str:
     """Search for information across the main sections of alibaba.ir."""
     search_query = f"site:alibaba.ir {query}"
-    return tavily_tool.invoke({"query": search_query})
+    # Change: How to call tavily_tool
+    response = tavily_tool.invoke({"query": search_query})
+    # Checking the output structure and extracting results
+    if isinstance(response, dict) and 'results' in response:
+        results = response['results']
+        # Convert the results to a string
+        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]]) # For example, the first 3
+    else:
+        # If the structure is different, return a default
+        return str(response)
 
-def search_alibaba_help_center(query: str) -> str:
+def search_alibaba_help_center_func(query: str) -> str:
     """Search for information specifically in the help center (FAQs, policies, contact)."""
     search_query = f"site:alibaba.ir/help-center {query}"
-    return tavily_tool.invoke({"query": search_query})
+    response = tavily_tool.invoke({"query": search_query})
+    if isinstance(response, dict) and 'results' in response:
+        results = response['results']
+        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
+    else:
+        return str(response)
 
-def search_alibaba_magazine(query: str) -> str:
+def search_alibaba_magazine_func(query: str) -> str:
     """Search for articles and information in the Alibaba Magazine."""
     search_query = f"site:alibaba.ir/mag {query}"
-    return tavily_tool.invoke({"query": search_query})
+    response = tavily_tool.invoke({"query": search_query})
+    if isinstance(response, dict) and 'results' in response:
+        results = response['results']
+        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
+    else:
+        return str(response)
 
 # --- Specific Section Search Tools ---
-# These provide more targeted search capabilities for major service categories
-def search_alibaba_profile(query: str) -> str:
+def search_alibaba_profile_func(query: str) -> str:
     """Search for information about profile(پروفایل)"""
     search_query = f"site:alibaba.ir/profile {query}"
-    return tavily_tool.invoke({"query": search_query})
+    response = tavily_tool.invoke({"query": search_query})
+    if isinstance(response, dict) and 'results' in response:
+        results = response['results']
+        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
+    else:
+        return str(response)
 
-def search_alibaba_flights_iran(query: str) -> str:
+def search_alibaba_flights_iran_func(query: str) -> str:
     """Search for information about domestic flights (پرواز داخلی) on alibaba.ir."""
     search_query = f"site:alibaba.ir {query}"
-    return tavily_tool.invoke({"query": search_query})
+    response = tavily_tool.invoke({"query": search_query})
+    if isinstance(response, dict) and 'results' in response:
+        results = response['results']
+        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
+    else:
+        return str(response)
 
-def search_alibaba_flights_international(query: str) -> str:
+def search_alibaba_flights_international_func(query: str) -> str:
     """Search for information about international flights (پرواز خارجی) on alibaba.ir/iranout."""
     search_query = f"site:alibaba.ir/iranout {query}"
-    return tavily_tool.invoke({"query": search_query})
+    response = tavily_tool.invoke({"query": search_query})
+    if isinstance(response, dict) and 'results' in response:
+        results = response['results']
+        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
+    else:
+        return str(response)
 
-def search_alibaba_trains(query: str) -> str:
+def search_alibaba_trains_func(query: str) -> str:
     """Search for information about train tickets (قطار) on alibaba.ir."""
     search_query = f"site:alibaba.ir/train-ticket {query}"
-    return tavily_tool.invoke({"query": search_query})
+    response = tavily_tool.invoke({"query": search_query})
+    if isinstance(response, dict) and 'results' in response:
+        results = response['results']
+        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
+    else:
+        return str(response)
 
-def search_alibaba_buses(query: str) -> str:
+def search_alibaba_buses_func(query: str) -> str:
     """Search for information about bus tickets (اتوبوس) on alibaba.ir."""
     search_query = f"site:alibaba.ir/bus-ticket {query}"
-    return tavily_tool.invoke({"query": search_query})
+    response = tavily_tool.invoke({"query": search_query})
+    if isinstance(response, dict) and 'results' in response:
+        results = response['results']
+        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
+    else:
+        return str(response)
 
-def search_alibaba_tours(query: str) -> str:
+def search_alibaba_tours_func(query: str) -> str:
     """Search for information about tours (تور) on alibaba.ir."""
     search_query = f"site:alibaba.ir/tour {query}"
-    return tavily_tool.invoke({"query": search_query})
+    response = tavily_tool.invoke({"query": search_query})
+    if isinstance(response, dict) and 'results' in response:
+        results = response['results']
+        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
+    else:
+        return str(response)
 
-def search_alibaba_hotels(query: str) -> str:
+def search_alibaba_hotels_func(query: str) -> str:
     """Search for information about hotels (هتل) on alibaba.ir."""
     search_query = f"site:alibaba.ir/hotel {query}"
-    return tavily_tool.invoke({"query": search_query})
+    response = tavily_tool.invoke({"query": search_query})
+    if isinstance(response, dict) and 'results' in response:
+        results = response['results']
+        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
+    else:
+        return str(response)
 
-def search_alibaba_accommodations(query: str) -> str:
+def search_alibaba_accommodations_func(query: str) -> str:
     """Search for information about villas and accommodations (ویلا و اقمتگاه) on alibaba.ir."""
     search_query = f"site:alibaba.ir/accommodation {query}"
-    return tavily_tool.invoke({"query": search_query})
+    response = tavily_tool.invoke({"query": search_query})
+    if isinstance(response, dict) and 'results' in response:
+        results = response['results']
+        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
+    else:
+        return str(response)
 
-def search_alibaba_visa(query: str) -> str:
+def search_alibaba_visa_func(query: str) -> str:
     """Search for information about visas (ویزا) on alibaba.ir."""
     search_query = f"site:alibaba.ir/visa {query}"
-    return tavily_tool.invoke({"query": search_query})
+    response = tavily_tool.invoke({"query": search_query})
+    if isinstance(response, dict) and 'results' in response:
+        results = response['results']
+        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
+    else:
+        return str(response)
 
-def search_alibaba_insurance(query: str) -> str:
+def search_alibaba_insurance_func(query: str) -> str:
     """Search for information about travel insurance (بیمه مسافرتی) on alibaba.ir."""
     search_query = f"site:alibaba.ir/insurance {query}"
-    return tavily_tool.invoke({"query": search_query})
+    response = tavily_tool.invoke({"query": search_query})
+    if isinstance(response, dict) and 'results' in response:
+        results = response['results']
+        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
+    else:
+        return str(response)
 
 # --- Define the list of tools available to the agent ---
+# تغییر: تعریف ابزارها به صورت StructuredTool
 tools = [
     # --- General and Help Center Tools ---
-    Tool.from_function(
+    StructuredTool.from_function(
         name="search_alibaba_general",
         description="Search for general information across all main sections of alibaba.ir. Use this for broad queries.",
-        func=search_alibaba_general
+        func=search_alibaba_general_func,
+        args_schema=SearchInput # مشخص کردن ساختار ورودی
     ),
-    Tool.from_function(
+    StructuredTool.from_function(
         name="search_alibaba_help_center",
         description="Search for information specifically within the help center (FAQs, policies, contact info) on alibaba.ir/help-center.",
-        func=search_alibaba_help_center
+        func=search_alibaba_help_center_func,
+        args_schema=SearchInput
     ),
-    Tool.from_function(
+    StructuredTool.from_function(
         name="search_alibaba_magazine",
         description="Search for articles and travel guides in the Alibaba Magazine (alibaba.ir/mag).",
-        func=search_alibaba_magazine
+        func=search_alibaba_magazine_func,
+        args_schema=SearchInput
     ),
 
     # --- Specific Service Category Tools ---
-
-    Tool.from_function(
+    StructuredTool.from_function(
         name="search_alibaba_profile",
         description="Search for information about profile (پروفایل).",
-        func=search_alibaba_profile
+        func=search_alibaba_profile_func,
+        args_schema=SearchInput
     ),
-   
-    Tool.from_function(
+    StructuredTool.from_function(
         name="search_alibaba_flights_domestic",
         description="Search for information about domestic flights (پرواز داخلی) on alibaba.ir.",
-        func=search_alibaba_flights_iran
+        func=search_alibaba_flights_iran_func,
+        args_schema=SearchInput
     ),
-
-    Tool.from_function(
+    StructuredTool.from_function(
         name="search_alibaba_flights_international",
         description="Search for information about international flights (پرواز خارجی) on alibaba.ir/iranout.",
-        func=search_alibaba_flights_international
+        func=search_alibaba_flights_international_func,
+        args_schema=SearchInput
     ),
-    Tool.from_function(
+    StructuredTool.from_function(
         name="search_alibaba_trains",
         description="Search for information about train tickets (قطار) on alibaba.ir/train-ticket.",
-        func=search_alibaba_trains
+        func=search_alibaba_trains_func,
+        args_schema=SearchInput
     ),
-    Tool.from_function(
+    StructuredTool.from_function(
         name="search_alibaba_buses",
         description="Search for information about bus tickets (اتوبوس) on alibaba.ir/bus-ticket.",
-        func=search_alibaba_buses
+        func=search_alibaba_buses_func,
+        args_schema=SearchInput
     ),
-    Tool.from_function(
+    StructuredTool.from_function(
         name="search_alibaba_tours",
         description="Search for information about tours (تور) on alibaba.ir/tour.",
-        func=search_alibaba_tours
+        func=search_alibaba_tours_func,
+        args_schema=SearchInput
     ),
-    Tool.from_function(
+    StructuredTool.from_function(
         name="search_alibaba_hotels",
         description="Search for information about hotels (هتل) on alibaba.ir/hotel.",
-        func=search_alibaba_hotels
+        func=search_alibaba_hotels_func,
+        args_schema=SearchInput
     ),
-    Tool.from_function(
+    StructuredTool.from_function(
         name="search_alibaba_accommodations",
         description="Search for information about villas and accommodations (ویلا و اقمتگاه) on alibaba.ir/accommodation.",
-        func=search_alibaba_accommodations
+        func=search_alibaba_accommodations_func,
+        args_schema=SearchInput
     ),
-    Tool.from_function(
+    StructuredTool.from_function(
         name="search_alibaba_visa",
         description="Search for information about visas (ویزا) on alibaba.ir/visa.",
-        func=search_alibaba_visa
+        func=search_alibaba_visa_func,
+        args_schema=SearchInput
     ),
-    Tool.from_function(
+    StructuredTool.from_function(
         name="search_alibaba_insurance",
         description="Search for information about travel insurance (بیمه مسافرتی) on alibaba.ir/insurance.",
-        func=search_alibaba_insurance
+        func=search_alibaba_insurance_func,
+        args_schema=SearchInput
     )
 ]
 
@@ -170,12 +254,11 @@ def get_agent(model_name: str):
         model_name=model_name,
         openai_api_key=openrouter_api_key,
         openai_api_base=openrouter_base_url,
-        temperature=0.7,  # For example, for more natural responses
-        max_tokens=2048,  # For example, for longer answers
+        temperature=0.3,  
+        max_tokens=4096,  
         top_p=0.9,
         frequency_penalty=0.1,
-        presence_penalty=0.1,
-        model_kwargs={"response_format": {"type": "json_object"}} # for JSON response
+        presence_penalty=0.1
     )
     llm = llm.with_config(system_message="""
 You are a smart and friendly assistant named SupportBot.

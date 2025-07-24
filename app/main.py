@@ -3,9 +3,15 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
+import os
+from dotenv import load_dotenv
 
 from app.chat_router import chat_router
 from app.auth_router import auth_router
+
+load_dotenv("./app/.env")
+
+allow_origins = os.getenv("front_end")
 
 app = FastAPI(title="Smart Support Chatbot")
 
@@ -19,7 +25,7 @@ def favicon():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://687f7594951ddf00081c0b47--supportchatbotai.netlify.app"],  
+    allow_origins=[allow_origins],  
     allow_credentials=True,
     allow_methods=["*"],  
     allow_headers=["*"],  
