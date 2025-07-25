@@ -11,3 +11,5 @@ python-multipart
 streamlit
 python-dotenv
 pymongo
+email-validator>=2.0.0
+pydantic>=2.0.0
