@@ -1,6 +1,6 @@
 #auth_reouter.py
 from fastapi import APIRouter, HTTPException, Depends
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi.security import  OAuth2PasswordBearer
 import uuid
 
 from app.users_db import create_user, verify_user
@@ -8,7 +8,7 @@ from app.auth_utils import create_access_token, decode_token
 from app.agent import get_agent
 from app.chat_router import sessions, DEFAULT_MODEL, WELCOME_MESSAGE
 from app.database import save_message
-from app.models import SignUpRequest, loginRequest
+from app.models import SignUpRequest, LoginRequest
 
 auth_router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -21,7 +21,7 @@ def signup(signup_data: SignUpRequest):
     return {"msg": "User created"}
 
 @auth_router.post("/login")
-def login(login_data: loginRequest): 
+def login(login_data: LoginRequest): 
     if not verify_user(login_data.email, login_data.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
