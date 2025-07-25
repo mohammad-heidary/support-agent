@@ -8,7 +8,7 @@ from app.auth_utils import create_access_token, decode_token
 from app.agent import get_agent
 from app.chat_router import sessions, DEFAULT_MODEL, WELCOME_MESSAGE
 from app.database import save_message
-from app.models import SignUpRequest
+from app.models import SignUpRequest, loginRequest
 
 auth_router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
@@ -21,13 +21,12 @@ def signup(signup_data: SignUpRequest):
     return {"msg": "User created"}
 
 @auth_router.post("/login")
-def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    if not verify_user(form_data.username, form_data.password):
+def login(login_data: loginRequest): 
+    if not verify_user(login_data.email, login_data.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    token = create_access_token({"sub": form_data.username})
+    token = create_access_token({"sub": login_data.email})
     
-    # Create a default session for this user
     session_id = str(uuid.uuid4())
     sessions[session_id] = {"agent": get_agent(DEFAULT_MODEL)}
     save_message(session_id, "assistant", WELCOME_MESSAGE)
