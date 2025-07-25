@@ -26,7 +26,7 @@ def login(login_data: loginRequest):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     token = create_access_token({"sub": login_data.email})
-    
+
     session_id = str(uuid.uuid4())
     sessions[session_id] = {"agent": get_agent(DEFAULT_MODEL)}
     save_message(session_id, "assistant", WELCOME_MESSAGE)
