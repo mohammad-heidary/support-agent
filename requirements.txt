@@ -8,7 +8,6 @@ langchain-openai
 python-jose 
 passlib[bcrypt]
 python-multipart
-streamlit
 python-dotenv
 pymongo
 email-validator>=2.0.0
