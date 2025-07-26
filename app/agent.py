@@ -1,283 +1,215 @@
 # app/agents.py
-
 from langgraph.prebuilt import create_react_agent
 from langchain_openai import ChatOpenAI
-from langchain_tavily import TavilySearch
 from langchain_core.tools import StructuredTool
-import requests 
 import os
 from dotenv import load_dotenv
 
-from app.models import SearchInput
+# Import input models
+from app.models import (
+    SearchInput, 
+    TrainScheduleSearchInput, 
+    FlightScheduleSearchInput, 
+    HotelSearchInput, 
+    VillaSearchInput,
+    FAQSearchInput
+)
 
-# Load environment variables from .env file
+# Import tools from different modules
+from app.soup import scrape_main_page_info, scrape_hotel_page_info
+from app.playwright import (
+    scrape_flight_schedules, 
+    scrape_train_schedules,
+    scrape_hotel_info, 
+    scrape_villa_info
+)
+from app.tavily import (
+    search_alibaba_general_func,
+    search_alibaba_faqs,
+    search_alibaba_magazine_func,
+    search_alibaba_profile_func,
+    search_alibaba_flights_iran_func,
+    search_alibaba_flights_international_func,
+    search_alibaba_trains_func,
+    search_alibaba_buses_func, 
+    search_alibaba_tours_func, 
+    search_alibaba_hotels_func, 
+    search_alibaba_accommodations_func,
+    search_alibaba_visa_func, 
+    search_alibaba_insurance_func
+)
+
+# Load environment variables
+# Load environment variables
 load_dotenv("./app/.env")
 
-# Access the variables
+# Access API keys
 openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
 openrouter_base_url = os.getenv("OPENROUTER_API_BASE")
-tavily_api_key = os.getenv("TAVILY_API_KEY")
-
-# --- Alibaba.ir Tools ---
-
-# Initialize the Tavily tool for web searches
-
-tavily_tool = TavilySearch(max_results=3, tavily_api_key=tavily_api_key, topic="general")
-
-# --- General Search Tools for Alibaba.ir Sections ---
-# These tools use Tavily to search within specific subdomains or sections of alibaba.ir
-
-# Change: We define functions separately (for use in StructuredTool)
-def search_alibaba_general_func(query: str) -> str:
-    """Search for information across the main sections of alibaba.ir."""
-    search_query = f"site:alibaba.ir {query}"
-    # Change: How to call tavily_tool
-    response = tavily_tool.invoke({"query": search_query})
-    # Checking the output structure and extracting results
-    if isinstance(response, dict) and 'results' in response:
-        results = response['results']
-        # Convert the results to a string
-        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]]) # For example, the first 3
-    else:
-        # If the structure is different, return a default
-        return str(response)
-
-def search_alibaba_help_center_func(query: str) -> str:
-    """Search for information specifically in the help center (FAQs, policies, contact)."""
-    search_query = f"site:alibaba.ir/help-center {query}"
-    response = tavily_tool.invoke({"query": search_query})
-    if isinstance(response, dict) and 'results' in response:
-        results = response['results']
-        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
-    else:
-        return str(response)
-
-def search_alibaba_magazine_func(query: str) -> str:
-    """Search for articles and information in the Alibaba Magazine."""
-    search_query = f"site:alibaba.ir/mag {query}"
-    response = tavily_tool.invoke({"query": search_query})
-    if isinstance(response, dict) and 'results' in response:
-        results = response['results']
-        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
-    else:
-        return str(response)
-
-# --- Specific Section Search Tools ---
-def search_alibaba_profile_func(query: str) -> str:
-    """Search for information about profile(پروفایل)"""
-    search_query = f"site:alibaba.ir/profile {query}"
-    response = tavily_tool.invoke({"query": search_query})
-    if isinstance(response, dict) and 'results' in response:
-        results = response['results']
-        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
-    else:
-        return str(response)
-
-def search_alibaba_flights_iran_func(query: str) -> str:
-    """Search for information about domestic flights (پرواز داخلی) on alibaba.ir."""
-    search_query = f"site:alibaba.ir {query}"
-    response = tavily_tool.invoke({"query": search_query})
-    if isinstance(response, dict) and 'results' in response:
-        results = response['results']
-        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
-    else:
-        return str(response)
-
-def search_alibaba_flights_international_func(query: str) -> str:
-    """Search for information about international flights (پرواز خارجی) on alibaba.ir/iranout."""
-    search_query = f"site:alibaba.ir/iranout {query}"
-    response = tavily_tool.invoke({"query": search_query})
-    if isinstance(response, dict) and 'results' in response:
-        results = response['results']
-        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
-    else:
-        return str(response)
-
-def search_alibaba_trains_func(query: str) -> str:
-    """Search for information about train tickets (قطار) on alibaba.ir."""
-    search_query = f"site:alibaba.ir/train-ticket {query}"
-    response = tavily_tool.invoke({"query": search_query})
-    if isinstance(response, dict) and 'results' in response:
-        results = response['results']
-        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
-    else:
-        return str(response)
-
-def search_alibaba_buses_func(query: str) -> str:
-    """Search for information about bus tickets (اتوبوس) on alibaba.ir."""
-    search_query = f"site:alibaba.ir/bus-ticket {query}"
-    response = tavily_tool.invoke({"query": search_query})
-    if isinstance(response, dict) and 'results' in response:
-        results = response['results']
-        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
-    else:
-        return str(response)
-
-def search_alibaba_tours_func(query: str) -> str:
-    """Search for information about tours (تور) on alibaba.ir."""
-    search_query = f"site:alibaba.ir/tour {query}"
-    response = tavily_tool.invoke({"query": search_query})
-    if isinstance(response, dict) and 'results' in response:
-        results = response['results']
-        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
-    else:
-        return str(response)
-
-def search_alibaba_hotels_func(query: str) -> str:
-    """Search for information about hotels (هتل) on alibaba.ir."""
-    search_query = f"site:alibaba.ir/hotel {query}"
-    response = tavily_tool.invoke({"query": search_query})
-    if isinstance(response, dict) and 'results' in response:
-        results = response['results']
-        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
-    else:
-        return str(response)
-
-def search_alibaba_accommodations_func(query: str) -> str:
-    """Search for information about villas and accommodations (ویلا و اقمتگاه) on alibaba.ir."""
-    search_query = f"site:alibaba.ir/accommodation {query}"
-    response = tavily_tool.invoke({"query": search_query})
-    if isinstance(response, dict) and 'results' in response:
-        results = response['results']
-        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
-    else:
-        return str(response)
-
-def search_alibaba_visa_func(query: str) -> str:
-    """Search for information about visas (ویزا) on alibaba.ir."""
-    search_query = f"site:alibaba.ir/visa {query}"
-    response = tavily_tool.invoke({"query": search_query})
-    if isinstance(response, dict) and 'results' in response:
-        results = response['results']
-        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
-    else:
-        return str(response)
-
-def search_alibaba_insurance_func(query: str) -> str:
-    """Search for information about travel insurance (بیمه مسافرتی) on alibaba.ir."""
-    search_query = f"site:alibaba.ir/insurance {query}"
-    response = tavily_tool.invoke({"query": search_query})
-    if isinstance(response, dict) and 'results' in response:
-        results = response['results']
-        return "\n".join([f"Title: {res['title']}\nURL: {res['url']}\nSnippet: {res['content']}\n---" for res in results[:3]])
-    else:
-        return str(response)
 
 # --- Define the list of tools available to the agent ---
-# تغییر: تعریف ابزارها به صورت StructuredTool
 tools = [
-    # --- General and Help Center Tools ---
+    # --- Tavily Search Tools (General & Specific Sections) ---
     StructuredTool.from_function(
         name="search_alibaba_general",
-        description="Search for general information across all main sections of alibaba.ir. Use this for broad queries.",
+        description="جستجوی عمومی در کل سایت علی‌بابا برای اطلاعات کلی.",
         func=search_alibaba_general_func,
-        args_schema=SearchInput # مشخص کردن ساختار ورودی
+        args_schema=SearchInput
     ),
     StructuredTool.from_function(
-        name="search_alibaba_help_center",
-        description="Search for information specifically within the help center (FAQs, policies, contact info) on alibaba.ir/help-center.",
-        func=search_alibaba_help_center_func,
-        args_schema=SearchInput
+        name="search_alibaba_faqs",
+        description="جستجو برای پیدا کردن پاسخ سوالات متداول در علی‌بابا.",
+        func=search_alibaba_faqs,
+        args_schema=FAQSearchInput
     ),
     StructuredTool.from_function(
         name="search_alibaba_magazine",
-        description="Search for articles and travel guides in the Alibaba Magazine (alibaba.ir/mag).",
+        description="جستجو در مجله علی‌بابا برای مقالات و راهنماها.",
         func=search_alibaba_magazine_func,
         args_schema=SearchInput
     ),
-
-    # --- Specific Service Category Tools ---
     StructuredTool.from_function(
         name="search_alibaba_profile",
-        description="Search for information about profile (پروفایل).",
+        description="جستجو در بخش پروفایل کاربری علی‌بابا.",
         func=search_alibaba_profile_func,
         args_schema=SearchInput
     ),
     StructuredTool.from_function(
         name="search_alibaba_flights_domestic",
-        description="Search for information about domestic flights (پرواز داخلی) on alibaba.ir.",
+        description="جستجوی اطلاعات کلی درباره پروازهای داخلی علی‌بابا.",
         func=search_alibaba_flights_iran_func,
         args_schema=SearchInput
     ),
     StructuredTool.from_function(
         name="search_alibaba_flights_international",
-        description="Search for information about international flights (پرواز خارجی) on alibaba.ir/iranout.",
+        description="جستجوی اطلاعات کلی درباره پروازهای خارجی علی‌بابا.",
         func=search_alibaba_flights_international_func,
         args_schema=SearchInput
     ),
     StructuredTool.from_function(
         name="search_alibaba_trains",
-        description="Search for information about train tickets (قطار) on alibaba.ir/train-ticket.",
+        description="جستجوی اطلاعات کلی درباره بلیط قطار علی‌بابا.",
         func=search_alibaba_trains_func,
         args_schema=SearchInput
     ),
     StructuredTool.from_function(
         name="search_alibaba_buses",
-        description="Search for information about bus tickets (اتوبوس) on alibaba.ir/bus-ticket.",
+        description="جستجوی اطلاعات کلی درباره بلیط اتوبوس علی‌بابا.",
         func=search_alibaba_buses_func,
         args_schema=SearchInput
     ),
     StructuredTool.from_function(
         name="search_alibaba_tours",
-        description="Search for information about tours (تور) on alibaba.ir/tour.",
+        description="جستجوی اطلاعات کلی درباره تورهای علی‌بابا.",
         func=search_alibaba_tours_func,
         args_schema=SearchInput
     ),
     StructuredTool.from_function(
-        name="search_alibaba_hotels",
-        description="Search for information about hotels (هتل) on alibaba.ir/hotel.",
+        name="search_alibaba_hotels_general",
+        description="جستجوی اطلاعات کلی درباره هتل‌های علی‌بابا.",
         func=search_alibaba_hotels_func,
         args_schema=SearchInput
     ),
     StructuredTool.from_function(
-        name="search_alibaba_accommodations",
-        description="Search for information about villas and accommodations (ویلا و اقمتگاه) on alibaba.ir/accommodation.",
+        name="search_alibaba_accommodations_general",
+        description="جستجوی اطلاعات کلی درباره ویلا و اقامتگاه‌های علی‌بابا.",
         func=search_alibaba_accommodations_func,
         args_schema=SearchInput
     ),
     StructuredTool.from_function(
         name="search_alibaba_visa",
-        description="Search for information about visas (ویزا) on alibaba.ir/visa.",
+        description="جستجوی اطلاعات کلی درباره ویزای علی‌بابا.",
         func=search_alibaba_visa_func,
         args_schema=SearchInput
     ),
     StructuredTool.from_function(
         name="search_alibaba_insurance",
-        description="Search for information about travel insurance (بیمه مسافرتی) on alibaba.ir/insurance.",
+        description="جستجوی اطلاعات کلی درباره بیمه مسافرتی علی‌بابا.",
         func=search_alibaba_insurance_func,
         args_schema=SearchInput
-    )
+    ),
+
+    # --- BeautifulSoup Scraping Tools ---
+    StructuredTool.from_function(
+        name="scrape_alibaba_main_page",
+        description="دریافت اطلاعات کلی از صفحه اصلی علی‌بابا (https://www.alibaba.ir/). شامل خدمات اصلی، لینک‌های پایین صفحه و مزایای سفر.",
+        func=scrape_main_page_info,
+        args_schema=SearchInput 
+    ),
+    StructuredTool.from_function(
+        name="scrape_alibaba_hotel_page",
+        description="دریافت اطلاعات از صفحه رزرو هتل علی‌بابا (https://www.alibaba.ir/hotel).",
+        func=scrape_hotel_page_info,
+        args_schema=SearchInput 
+    ),
+
+    # --- Playwright Interactive Scraping Tools ---
+    StructuredTool.from_function(
+        name="search_alibaba_flight_schedules",
+        description="جستجوی دقیق و تعاملی بلیط هواپیمای داخلی بین دو شهر در تاریخ مشخص در علی‌بابا.",
+        func=scrape_flight_schedules,
+        args_schema=FlightScheduleSearchInput
+    ),
+    StructuredTool.from_function(
+        name="search_alibaba_train_schedules",
+        description="جستجوی دقیق و تعاملی زمانبندی و قیمت قطارها بین دو شهر در تاریخ مشخص در علی‌بابا.",
+        func=scrape_train_schedules,
+        args_schema=TrainScheduleSearchInput
+    ),
+    StructuredTool.from_function(
+        name="search_alibaba_hotel_info",
+        description="جستجوی تعاملی اطلاعات هتل در یک شهر و بازه زمانی مشخص در علی‌بابا.",
+        func=scrape_hotel_info,
+        args_schema=HotelSearchInput
+    ),
+    StructuredTool.from_function(
+        name="search_alibaba_villa_info",
+        description="جستجوی تعاملی اطلاعات ویلا/اقامتگاه در یک شهر و بازه زمانی مشخص در علی‌بابا.",
+        func=scrape_villa_info,
+        args_schema=VillaSearchInput
+    ),
 ]
 
 def get_agent(model_name: str):
+    """ساخت و بازگشت یک ایجنت پیکربندی شده.
+    Create and return a configured agent.
+    """
     llm = ChatOpenAI(
         model_name=model_name,
         openai_api_key=openrouter_api_key,
         openai_api_base=openrouter_base_url,
-        temperature=0.3,  
-        max_tokens=4096,  
+        temperature=0.7,
+        max_tokens=4096,
         top_p=0.9,
         frequency_penalty=0.1,
         presence_penalty=0.1
     )
+    # Configure the system message for the agent
     llm = llm.with_config(system_message="""
 You are a smart and friendly assistant named SupportBot.
 You help users find information specifically about services and policies on alibaba.ir.
+You have access to various tools to provide the most accurate and up-to-date information.
 Always respond in natural Persian (Farsi). Do NOT show code unless asked.
 
 Available tools:
-- search_alibaba_general: For general questions about alibaba.ir.
-- search_alibaba_help_center: For FAQs, policies, and contact information.
-- search_alibaba_magazine: For articles and guides from the Alibaba Magazine.
-- search_alibaba_profile: For questions about profile.
-- search_alibaba_flights_domestic: For questions about domestic flights.
-- search_alibaba_flights_international: For questions about international flights.
-- search_alibaba_trains: For questions about train tickets.
-- search_alibaba_buses: For questions about bus tickets.
-- search_alibaba_tours: For questions about tours.
-- search_alibaba_hotels: For questions about hotels.
-- search_alibaba_accommodations: For questions about villas and accommodations.
-- search_alibaba_visa: For questions about visas.
-- search_alibaba_insurance: For questions about travel insurance.
+- search_alibaba_general: جستجوی عمومی در کل سایت علی‌بابا.
+- search_alibaba_faqs: جستجو برای پیدا کردن پاسخ سوالات متداول.
+- search_alibaba_magazine: جستجو در مجله علی‌بابا.
+- search_alibaba_profile: جستجو در بخش پروفایل کاربری.
+- search_alibaba_flights_domestic: جستجوی اطلاعات کلی پروازهای داخلی.
+- search_alibaba_flights_international: جستجوی اطلاعات کلی پروازهای خارجی.
+- search_alibaba_trains: جستجوی اطلاعات کلی قطارها.
+- search_alibaba_buses: جستجوی اطلاعات کلی اتوبوس‌ها.
+- search_alibaba_tours: جستجوی اطلاعات کلی تورها.
+- search_alibaba_hotels_general: جستجوی اطلاعات کلی هتل‌ها.
+- search_alibaba_accommodations_general: جستجوی اطلاعات کلی ویلا و اقامتگاه‌ها.
+- search_alibaba_visa: جستجوی اطلاعات کلی ویزا.
+- search_alibaba_insurance: جستجوی اطلاعات کلی بیمه مسافرتی.
+- scrape_alibaba_main_page: دریافت اطلاعات کلی از صفحه اصلی.
+- scrape_alibaba_hotel_page: دریافت اطلاعات از صفحه هتل.
+- search_alibaba_flight_schedules: جستجوی دقیق بلیط هواپیمای داخلی.
+- search_alibaba_train_schedules: جستجوی دقیق زمانبندی و قیمت قطارها.
+- search_alibaba_hotel_info: جستجوی تعاملی اطلاعات هتل.
+- search_alibaba_villa_info: جستجوی تعاملی اطلاعات ویلا/اقامتگاه.
 """)
     return create_react_agent(llm, tools=tools)
