@@ -9,6 +9,9 @@ WORKDIR /app
 # Copy requirements.txt first (to leverage Docker cache)
 COPY requirements.txt .
 
+# Add this line to install playwright browsers
+RUN playwright install chromium
+
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
