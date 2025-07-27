@@ -835,7 +835,7 @@ def search_train_schedules_simple(origin: str, destination: str, date: str) -> s
         return f"❌ خطایی در جستجوی ساده زمانبندی قطار رخ داد: {str(e)}"
 
 # wrapper نهایی (همون قبلی)
-def search_aliababa_train_schedules(origin: str, destination: str, date: str) -> str:
+def search_alibaba_train_schedules(origin: str, destination: str, date: str) -> str:
     """
     Wrapper نهایی که تابع sync رو تو یه thread جدا اجرا می‌کنه.
     Final wrapper that runs the sync function in a separate thread.
@@ -1024,7 +1024,7 @@ def search_bus_schedules_simple(origin: str, destination: str, date: str) -> str
         return f"❌ خطایی در جستجوی ساده زمانبندی اتوبوس رخ داد: {str(e)}"
 
 # به‌روزرسانی wrapper برای استفاده از نسخه sync جدید
-def search_aliaba_bus_schedules(origin: str, destination: str, date: str) -> str:
+def search_alibaba_bus_schedules(origin: str, destination: str, date: str) -> str:
     """
     Wrapper نهایی که تابع sync رو تو یه thread جدا اجرا می‌کنه.
     Final wrapper that runs the sync function in a separate thread.
