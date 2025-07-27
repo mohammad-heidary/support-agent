@@ -1,2 +1,4 @@
 .env
 ./app/_pycache_
+./app/Listmodels.py
+ui.py
