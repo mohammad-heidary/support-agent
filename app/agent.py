@@ -17,13 +17,13 @@ from app.models import (
 
 # Import tools from different modules
 from app.playwright import (
-    scrape_flight_schedules, 
-    scrape_train_schedules,
-    scrape_hotel_info, 
-    scrape_villa_info,
+    search_alibaba_flight_schedules, 
+    search_alibaba_train_schedules,
+    search_alibaba_hotel_info, 
+    search_alibaba_villa_info,
     search_alibaba_faqs_interactive,
-    scrape_tour_info,
-    scrape_bus_schedules
+    search_alibaba_tour_info,
+    search_alibaba_bus_schedules
 )
 # Import remaining Tavily tools
 from app.tavily import (
@@ -136,37 +136,37 @@ tools = [
     StructuredTool.from_function(
         name="search_alibaba_flight_schedules",
         description="جستجوی دقیق و تعاملی بلیط هواپیمای داخلی بین دو شهر در تاریخ مشخص در علی‌بابا.",
-        func=scrape_flight_schedules,
+        func=search_alibaba_flight_schedules,
         args_schema=FlightScheduleSearchInput
     ),
     StructuredTool.from_function(
         name="search_alibaba_train_schedules",
         description="جستجوی دقیق و تعاملی زمانبندی و قیمت قطارها بین دو شهر در تاریخ مشخص در علی‌بابا.",
-        func=scrape_train_schedules,
+        func=search_alibaba_train_schedules,
         args_schema=TrainScheduleSearchInput
     ),
     StructuredTool.from_function(
         name="search_alibaba_bus_schedules",
         description="جستجوی دقیق و تعاملی زمانبندی و قیمت اتوبوس‌ها بین دو شهر در تاریخ مشخص در علی‌بابا.",
-        func=scrape_bus_schedules,
+        func=search_alibaba_bus_schedules,
         args_schema=TrainScheduleSearchInput # Reusing input schema for simplicity, could create a specific one
     ),
     StructuredTool.from_function(
         name="search_alibaba_tour_info",
         description="جستجوی تعاملی اطلاعات تورها در علی‌بابا با مبدا، مقصد و بازه زمانی.",
-        func=scrape_tour_info,
+        func=search_alibaba_tour_info,
         args_schema=HotelSearchInput # Reusing input schema, adjust if a specific tour schema is created
     ),
     StructuredTool.from_function(
         name="search_alibaba_hotel_info",
         description="جستجوی تعاملی اطلاعات هتل در یک شهر و بازه زمانی مشخص در علی‌بابا.",
-        func=scrape_hotel_info,
+        func=search_alibaba_hotel_info,
         args_schema=HotelSearchInput
     ),
     StructuredTool.from_function(
         name="search_alibaba_villa_info",
         description="جستجوی تعاملی اطلاعات ویلا/اقامتگاه در یک شهر و بازه زمانی مشخص در علی‌بابا.",
-        func=scrape_villa_info,
+        func=search_alibaba_villa_info,
         args_schema=VillaSearchInput
     ),
     StructuredTool.from_function(
