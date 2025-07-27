@@ -6,7 +6,9 @@ langchain-tavily
 langgraph
 langchain-openai
 python-jose 
-passlib[bcrypt]
+passlib
+regex
+bcrypt
 python-multipart
 python-dotenv
 pymongo
